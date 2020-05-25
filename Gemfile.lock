@@ -10,7 +10,7 @@ GEM
     faraday (1.0.1)
       multipart-post (>= 1.2, < 3)
     multipart-post (2.1.1)
-    rake (10.5.0)
+    rake (13.0.1)
     rspec (3.9.0)
       rspec-core (~> 3.9.0)
       rspec-expectations (~> 3.9.0)
@@ -32,7 +32,7 @@ DEPENDENCIES
   bundler (~> 1.17)
   faraday (~> 1.0)
   joplin!
-  rake (~> 10.0)
+  rake (~> 13.0)
   rspec (~> 3.0)
 
 BUNDLED WITH
