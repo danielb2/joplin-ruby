@@ -66,6 +66,9 @@ body: #{self.body}"""
     def parse response
       return if not response.body
       note = JSON.parse response.body
+      if response.status != 200
+        raise Error.new note["error"]
+      end
       @body = note['body']
       @title = note['title']
       @id = note["id"]
