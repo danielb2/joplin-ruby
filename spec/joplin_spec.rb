@@ -5,17 +5,10 @@ RSpec.describe Joplin do
 
   it "creates a note" do
     Joplin::token = ""
-    note = Joplin::Notes.new "2415cd89551f408a9ae02c5967f3d62b"
-    puts note
-    note.body = "something different further"
-    note.save!
-    # puts note
-    note2 = Joplin::Notes.new
-    note2.body = IO.readlines("/Users/daniel/work/otherware/trakt_seen/tv_and_movies.txt").pop
-    puts note2.body
-    note2.title = "a generatednote"
-    note2.save!
-    puts note2
+    # note = Joplin::Notes.new "f3b9a4891c584f388c0e2e214d2fd37f"
+    # puts note.resources
+    all = Joplin::Notes.all
+    puts all[9]
     # expect(false).to eq(true)
   end
 end

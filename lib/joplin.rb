@@ -24,7 +24,47 @@ module Joplin
 
   self.uri = "http://localhost:41184"
 
-  class Notes
+  class Resource
+    attr_reader :id
+
+    def self.all
+        url = "#{Joplin::uri}/resources/?token=#{Joplin::token}&fields=id"
+        res = Faraday.get url
+        parsed = JSON.parse res.body
+        parsed.map do |resource|
+          Resource.new resource['id']
+        end
+    end
+
+    def initialize(id=nil)
+
+      raise Error.new("need id") unless id
+      @id = id
+      url = "#{Joplin::uri}/resources/#{id}?token=#{Joplin::token}&fields=mime,filename,id"
+      res = Faraday.get url
+      @parsed = JSON.parse res.body
+    end
+
+    def delete
+      url = "#{Joplin::uri}/resources/#{id}?token=#{Joplin::token}"
+      res = Faraday.delete url
+      res.status == 200
+    end
+
+    def to_s
+      """id: #{@id},
+mime: #{@parsed['mime']}
+filename: #{@parsed['filename']}"""
+    end
+
+    def self.orphaned
+      resources = all.map { |r| r.id }
+      note_resources = Note.all.map { |n| n.resources }.flatten.map { |r| r.id }
+      resources.difference(note_resources).map { |id| Resource.new id }
+    end
+  end
+
+  class Note
     attr_accessor :body
     attr_accessor :title
     attr_reader :id
@@ -36,6 +76,16 @@ module Joplin
         url = "#{Joplin::uri}/notes/#{id}?token=#{Joplin::token}&fields=title,body,id"
         parse Faraday.get url
       end
+    end
+
+    def resources
+        url = "#{Joplin::uri}/notes/#{id}/resources?token=#{Joplin::token}&fields=id"
+        res = Faraday.get url
+        parsed = JSON.parse res.body
+        parsed.map do |resource_data|
+          id = resource_data['id']
+          Resource.new id
+        end
     end
 
     def to_json
@@ -60,6 +110,15 @@ module Joplin
       """id: #{self.id}
 title: #{self.title}
 body: #{self.body}"""
+    end
+
+    def self.all
+        url = "#{Joplin::uri}/notes/?token=#{Joplin::token}&fields=id"
+        res = Faraday.get url
+        parsed = JSON.parse res.body
+        parsed.map do |note|
+          Note.new note['id']
+        end
     end
 
     private
