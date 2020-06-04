@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 
-require "./lib/joplin.rb"
+$:.unshift File.expand_path("../../lib", __FILE__)
+
+require "joplin"
 require 'thor'
 
 
