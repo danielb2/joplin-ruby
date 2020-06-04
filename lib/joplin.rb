@@ -31,6 +31,9 @@ module Joplin
         url = "#{Joplin::uri}/resources/?token=#{Joplin::token}&fields=id"
         res = Faraday.get url
         parsed = JSON.parse res.body
+        if res.status != 200
+          throw Error.new(parsed['error'])
+        end
         parsed.map do |resource|
           Resource.new resource['id']
         end

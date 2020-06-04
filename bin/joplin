@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+require "./lib/joplin.rb"
+require 'thor'
+
+
+class MyCLI < Thor
+  class_option :token, :type => :string #, required: true
+  class_option :help, :type => :boolean
+  class_option :version, :type => :boolean
+  map ["-v", "--version"] => :version
+  map ["-h", "--help"] => :help
+  option :token, :required => true
+  option :'dry-run', desc: "dry-run", aliases: '-n'
+  desc :clean, "clean unused resources"
+  def clean
+    Joplin::token = options[:token]
+    Joplin::Resource.orphaned.map { |r|
+      r.delete if not options['dry-run']
+      puts "Deleted #{r.id}"
+    }
+  end
+
+  method_options :force => :boolean
+  desc "version", "get version of program"
+  def version
+    puts Joplin::VERSION
+  end
+end
+
+MyCLI.start(ARGV)
