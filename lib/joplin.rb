@@ -10,6 +10,13 @@ module Joplin
     @@token = token
   end
 
+  def self.search(query, opts = {})
+    url = "#{Joplin::uri}/search/?query=#{query}&token=#{Joplin::token}&type=#{opts[:type]}"
+    res = Faraday.get url
+    parsed = JSON.parse res.body
+    return parsed
+  end
+
   def self.token
     @@token
   end
@@ -134,6 +141,25 @@ body: #{self.body}"""
       @body = note['body']
       @title = note['title']
       @id = note["id"]
+    end
+  end
+
+  class Notebook
+    def initialize(id=nil)
+
+      @id = id
+      if id
+        url = "#{Joplin::uri}/folders/#{id}?token=#{Joplin::token}"
+        res = Faraday.get url
+        parsed = JSON.parse res.body
+      end
+    end
+
+    def notes
+      url = "#{Joplin::uri}/folders/#{@id}/notes?token=#{Joplin::token}"
+      res = Faraday.get url
+      notes = JSON.parse res.body
+      notes.map! { |n| Joplin::Note.new n['id'] }
     end
   end
 end

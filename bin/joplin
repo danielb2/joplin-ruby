@@ -28,6 +28,28 @@ class MyCLI < Thor
   def version
     puts Joplin::VERSION
   end
+
+  desc :nb2n, "concate all notes in a notebook to one note. Possible PDF export"
+  option :token, :required => true
+  option :type, :type => :string
+  def nb2n(query)
+    Joplin::token = options[:token]
+    results = Joplin.search(query, { type: 'folder' })
+    nb = results[0];
+    if not (nb and nb['title'] == query)
+      abort "notebook #{query} not found"
+    end
+
+    notebook = Joplin::Notebook.new nb['id']
+    notes = notebook.notes
+    new_note = Joplin::Note.new
+    new_note.title = query
+    divider = %Q(<svg height="8" width="100%"><g fill="none" stroke="black" stroke-width="4"><path stroke-dasharray="20,10,5,5,5,10" d="M0 4 l415 0" /></g></svg>)
+
+    new_note.body = notes.map { |n| "\# #{n.title}\n\n#{n.body}" }.join("\n#{divider}\n")
+    new_note.save!
+    puts "Saved: #{new_note.title} with id: #{new_note.id}"
+  end
 end
 
 MyCLI.start(ARGV)
