@@ -44,9 +44,18 @@ class MyCLI < Thor
     notes = notebook.notes
     new_note = Joplin::Note.new
     new_note.title = query
-    divider = %Q(<svg height="8" width="100%"><g fill="none" stroke="black" stroke-width="4"><path stroke-dasharray="20,10,5,5,5,10" d="M0 4 l415 0" /></g></svg>)
+    divider = %Q(
 
-    new_note.body = notes.map { |n| "\# #{n.title}\n\n#{n.body}" }.join("\n#{divider}\n")
+<svg height="50" width="460">
+  <style> .line { stroke-width: 1px; fill: black; stroke: black; } </style>
+  <g id="triangle"><path d="M0 30 L200 25 Q 220 25 200 40 Z" class="line" /></g>
+  <use xlink:href="#triangle" transform="scale(-1 1) translate(-450 0)"/>
+  <circle cx="225" cy="32" r="8" class="line"/>
+</svg>
+
+)
+
+    new_note.body = notes.map { |n| "\# #{n.title}\n\n#{n.body}" }.join(divider)
     new_note.save!
     puts "Saved: #{new_note.title} with id: #{new_note.id}"
   end
