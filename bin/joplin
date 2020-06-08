@@ -48,9 +48,9 @@ class MyCLI < Thor
 
 <svg height="50" width="460">
   <style> .line { stroke-width: 1px; fill: black; stroke: black; } </style>
-  <g id="triangle"><path d="M0 30 L200 25 Q 220 25 200 40 Z" class="line" /></g>
+  <g id="triangle"><path d="M0 30 L200 30  Q 220 25 200 40 Z" class="line" /></g>
   <use xlink:href="#triangle" transform="scale(-1 1) translate(-450 0)"/>
-  <circle cx="225" cy="32" r="8" class="line"/>
+  <circle cx="225" cy="32" r="7" class="line"/>
 </svg>
 
 )
