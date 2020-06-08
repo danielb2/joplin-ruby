@@ -24,3 +24,12 @@ updating a note
   note.save!
 end
 ```
+
+
+## CLI
+
+### joplin nb2n --token <yourtoken> 'notebook name'
+
+Will take a notebook and concatenate all notes into one for easy export to PDF
+
+
