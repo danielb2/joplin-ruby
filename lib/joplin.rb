@@ -133,7 +133,9 @@ body: #{self.body}"""
 
     private
     def parse response
-      return if not response.body
+      if response.body.empty?
+        raise "No note found with id #{@id}"
+      end
       note = JSON.parse response.body
       if response.status != 200
         raise Error.new note["error"]

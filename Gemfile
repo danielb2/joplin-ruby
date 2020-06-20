@@ -8,3 +8,5 @@ gemspec
 gem "faraday", "~> 1.0"
 
 gem "thor", "~> 1.0"
+
+gem "sqlite3", "~> 1.4"

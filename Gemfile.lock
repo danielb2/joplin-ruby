@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    joplin (0.1.3)
+    joplin (0.2.2)
       faraday (~> 1.0)
 
 GEM
@@ -25,6 +25,7 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.9.0)
     rspec-support (3.9.3)
+    sqlite3 (1.4.2)
     thor (1.0.1)
 
 PLATFORMS
@@ -36,6 +37,7 @@ DEPENDENCIES
   joplin!
   rake (~> 13.0)
   rspec (~> 3.0)
+  sqlite3 (~> 1.4)
   thor (~> 1.0)
 
 BUNDLED WITH

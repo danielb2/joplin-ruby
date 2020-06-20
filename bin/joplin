@@ -4,6 +4,18 @@ $:.unshift File.expand_path("../../lib", __FILE__)
 
 require "joplin"
 require 'thor'
+require "joplin/token"
+
+DIVIDER = %Q(
+
+<svg height="50" width="460">
+  <style> .line { stroke-width: 1px; fill: black; stroke: black; } </style>
+  <g id="triangle"><path d="M0 30 L200 30  Q 220 25 200 35 Z" class="line" /></g>
+  <use xlink:href="#triangle" transform="scale(-1 1) translate(-450 0)"/>
+  <circle cx="225" cy="32" r="7" class="line"/>
+</svg>
+
+)
 
 
 class MyCLI < Thor
@@ -19,7 +31,8 @@ class MyCLI < Thor
     Joplin::token = options[:token]
     Joplin::Resource.orphaned.map { |r|
       r.delete if not options['dry-run']
-      puts "Deleted #{r.id}"
+      would = "would have " if options['dry-run']
+      puts "#{would}deleted #{r.id}"
     }
   end
 
@@ -30,10 +43,10 @@ class MyCLI < Thor
   end
 
   desc :nb2n, "concate all notes in a notebook to one note. Possible PDF export"
-  option :token, :required => true
+  long_desc "The idea is to make a big note from all the notes in a notebook. PDF export or whatever export can happen from that. The notes are concatenated with a separator."
+  option :token
   option :type, :type => :string
   def nb2n(query)
-    Joplin::token = options[:token]
     results = Joplin.search(query, { type: 'folder' })
     nb = results[0];
     if not (nb and nb['title'] == query)
@@ -44,20 +57,39 @@ class MyCLI < Thor
     notes = notebook.notes
     new_note = Joplin::Note.new
     new_note.title = query
-    divider = %Q(
-
-<svg height="50" width="460">
-  <style> .line { stroke-width: 1px; fill: black; stroke: black; } </style>
-  <g id="triangle"><path d="M0 30 L200 30  Q 220 25 200 35 Z" class="line" /></g>
-  <use xlink:href="#triangle" transform="scale(-1 1) translate(-450 0)"/>
-  <circle cx="225" cy="32" r="7" class="line"/>
-</svg>
-
-)
-
-    new_note.body = notes.map { |n| "\# #{n.title}\n\n#{n.body}" }.join(divider)
+    new_note.body = notes.map { |n| "\# #{n.title}\n\n#{n.body}" }.join(DIVIDER)
     new_note.save!
     puts "Saved: #{new_note.title} with id: #{new_note.id}"
+  end
+
+  desc :build, "build a note from a note containing references"
+
+  long_desc %Q(Takes a note and looks up all the referenced notes and makes a new
+  note from those. The notes are concatenated with a separator.\n\nIf you have a
+  line with 'title: a title' then it will be used for the title of the built
+  email.)
+
+  def build(id)
+    token
+    note = Joplin::Note.new id
+    notes = []
+    title = nil
+    note.body.each_line { |line|
+      title = $1 if line =~ /title: (.*)$/
+      line =~ /\(:\/([^)]+)\)/
+      notes.push Joplin::Note.new $1 if $1
+    }
+    new_note = Joplin::Note.new
+    new_note.title = title || "built: #{note.title}"
+    new_note.body = notes.map { |n| "\# #{n.title}\n\n#{n.body}" }.join(DIVIDER)
+    new_note.save!
+    puts "Saved: #{new_note.title} with id: #{new_note.id}"
+  end
+
+  private
+  def token()
+    Joplin::token = options[:token] || Token.get
+    raise "Couldn't find token in local database and it wasn't passed as an option. You better check yourself!" if not Joplin::token
   end
 end
 
