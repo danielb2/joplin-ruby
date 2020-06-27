@@ -5,4 +5,7 @@ push: clean all
 	gem push *gem
 
 clean:
-	rm *gem
+	rm -f *gem
+
+install: clean all
+	gem install --local *gem

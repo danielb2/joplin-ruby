@@ -24,11 +24,12 @@ class MyCLI < Thor
   class_option :version, :type => :boolean
   map ["-v", "--version"] => :version
   map ["-h", "--help"] => :help
-  option :token, :required => true
+  option :token
   option :'dry-run', desc: "dry-run", aliases: '-n'
   desc :clean, "clean unused resources"
   def clean
-    Joplin::token = options[:token]
+    Joplin::token = options[:token] || Joplin::Token.get
+    puts "Please wait, this can take while."
     Joplin::Resource.orphaned.map { |r|
       r.delete if not options['dry-run']
       would = "would have " if options['dry-run']
@@ -47,6 +48,7 @@ class MyCLI < Thor
   option :token
   option :type, :type => :string
   def nb2n(query)
+    Joplin::token = options[:token] || Joplin::Token.get
     results = Joplin.search(query, { type: 'folder' })
     nb = results[0];
     if not (nb and nb['title'] == query)
@@ -88,7 +90,7 @@ class MyCLI < Thor
 
   private
   def token()
-    Joplin::token = options[:token] || Token.get
+    Joplin::token = options[:token] || Joplin::Token.get
     raise "Couldn't find token in local database and it wasn't passed as an option. You better check yourself!" if not Joplin::token
   end
 end

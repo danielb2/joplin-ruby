@@ -22,8 +22,18 @@ updating a note
   note = Joplin::Notes.new "6e3811c7a73148a" # note id can be found in the information of any note
   note.title = "a new note title"
   note.save!
-end
 ```
+
+### A note on the token
+
+If you've got joplin installed, you can do:
+
+``` ruby
+require "joplin/token"
+token = Joplin::Token.get
+```
+
+to get the token programatically. It reads from the sqlite database located in `~/.config/joplin-desktop`
 
 
 ## CLI
@@ -32,4 +42,4 @@ end
 
 Will take a notebook and concatenate all notes into one for easy export to PDF
 
-
+The token argument is optional and if you have it installed locally it will find the token
