@@ -5,6 +5,7 @@ require "json"
 module Joplin
   class Error < StandardError; end
   attr_accessor :token
+  @@token = nil
 
   def self.token= token
     @@token = token
@@ -27,7 +28,7 @@ module Joplin
   end
 
   def self.token
-    @@token
+    @@token || get_token
   end
 
   def self.uri= uri
