@@ -17,6 +17,15 @@ module Joplin
     return parsed
   end
 
+  def self.get_token
+    begin
+      settings = JSON.parse File.read("#{ENV['HOME']}/.config/joplin-desktop/settings.json")
+      return settings['api.token']
+    rescue
+      return nil
+    end
+  end
+
   def self.token
     @@token
   end

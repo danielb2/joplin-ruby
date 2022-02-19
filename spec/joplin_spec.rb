@@ -3,6 +3,10 @@ RSpec.describe Joplin do
     expect(Joplin::VERSION).not_to be nil
   end
 
+  it "can get a webclipper token" do
+    expect(Joplin.get_token).not_to be nil
+  end
+
   it "creates a note" do
     Joplin::token = ""
     # note = Joplin::Notes.new "f3b9a4891c584f388c0e2e214d2fd37f"

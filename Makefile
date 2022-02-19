@@ -7,5 +7,8 @@ push: clean all
 clean:
 	rm -f *gem
 
+test:
+	rake
+
 install: clean all
 	gem install --local *gem

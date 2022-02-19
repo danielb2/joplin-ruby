@@ -11,15 +11,15 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{joplin API}
   spec.description   = %q{joplin API}
-  spec.homepage      = "http://github.com/danielb2/joplin"
+  spec.homepage      = "http://github.com/danielb2/joplin-ruby"
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.
   if spec.respond_to?(:metadata)
     spec.metadata["homepage_uri"] = spec.homepage
-    spec.metadata["source_code_uri"] = "http://github.com/danielb2/joplin"
-    spec.metadata["changelog_uri"] = "http://github.com/danielb2/joplin"
+    spec.metadata["source_code_uri"] = "http://github.com/danielb2/joplin-ruby"
+    spec.metadata["changelog_uri"] = "http://github.com/danielb2/joplin-ruby"
   else
     raise "RubyGems 2.0 or newer is required to protect against " \
       "public gem pushes."
