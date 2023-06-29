@@ -4,7 +4,6 @@ $:.unshift File.expand_path("../../lib", __FILE__)
 
 require "joplin"
 require 'thor'
-require "joplin/token"
 
 DIVIDER = %Q(
 
@@ -28,7 +27,7 @@ class MyCLI < Thor
   option :'dry-run', desc: "dry-run", aliases: '-n'
   desc :clean, "clean unused resources"
   def clean
-    Joplin::token = options[:token] || Joplin::Token.get
+    Joplin::token = Joplinl.get_token || options[:token]
     puts "Please wait, this can take while."
     Joplin::Resource.orphaned.map { |r|
       r.delete if not options['dry-run']
@@ -90,7 +89,7 @@ class MyCLI < Thor
 
   private
   def token()
-    Joplin::token = options[:token] || Joplin::Token.get
+    Joplin::token = Joplin.get_token || options[:token]
     raise "Couldn't find token in local database and it wasn't passed as an option. You better check yourself!" if not Joplin::token
   end
 end
