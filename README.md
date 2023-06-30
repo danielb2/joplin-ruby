@@ -35,6 +35,13 @@ token = Joplin::Token.get
 
 to get the token programatically. It reads from the sqlite database located in `~/.config/joplin-desktop`
 
+### Saving to a specific notebook
+
+You can specify the id of the notebook
+
+```ruby
+  note = Joplin::Note.new parent_id: 'c5e6827be8c946c78210d3508cce7ea6'
+```
 
 ## CLI
 
