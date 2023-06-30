@@ -10,5 +10,5 @@ push: clean all
 clean:
 	rm -f *gem
 
-install: clean all
+install: clean build
 	gem install --local *gem

@@ -81,14 +81,16 @@ filename: #{@parsed['filename']}"''
   end
 
   class Note
-    attr_accessor :body, :title
+    attr_accessor :body, :title, :parent_id
     attr_reader :id
 
-    def initialize(id = nil)
+    def initialize(id: nil, parent_id: nil)
+      puts "id: #{id} parent_id: #{parent_id}"
       @id = id
+      @parent_id = parent_id
       return unless id
 
-      url = "#{Joplin.uri}/notes/#{id}?token=#{Joplin.token}&fields=title,body,id"
+      url = "#{Joplin.uri}/notes/#{id}?token=#{Joplin.token}&fields=title,body,id,parent_id"
       parse HTTP.get url
     end
 
@@ -104,8 +106,9 @@ filename: #{@parsed['filename']}"''
 
     def to_json(*_args)
       {
-        title: @title,
-        body: @body
+        title:,
+        body:,
+        parent_id:
       }.to_json
     end
 
@@ -152,6 +155,7 @@ body: #{body}"''
       @body = note['body']
       @title = note['title']
       @id = note['id']
+      @parent_id = note['parent_id']
     end
   end
 

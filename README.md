@@ -19,7 +19,7 @@ end
 
 updating a note
 ```ruby
-  note = Joplin::Note.new "6e3811c7a73148a" # note id can be found in the information of any note
+  note = Joplin::Note.new id: "6e3811c7a73148a" # note id can be found in the information of any note
   note.title = "a new note title"
   note.save!
 ```
