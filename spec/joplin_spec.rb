@@ -1,22 +1,29 @@
 RSpec.describe Joplin do
-  it "has a version number" do
+  it 'has a version number' do
     expect(Joplin::VERSION).not_to be nil
   end
 
-  it "can get a webclipper token" do
+  it 'can get a webclipper token' do
     expect(Joplin.get_token).not_to be nil
   end
 
-  it "can do an implicit get of a webclipper token" do
+  it 'can do an implicit get of a webclipper token' do
     expect(Joplin.token).not_to be nil
   end
 
-  it "creates a note" do
-    Joplin::token = ""
-    # note = Joplin::Notes.new "f3b9a4891c584f388c0e2e214d2fd37f"
-    # puts note.resources
-    all = Joplin::Notes.all
-    puts all[9]
-    # expect(false).to eq(true)
+  it 'creates a note' do
+    note = Joplin::Note.new
+    note.title = 'easy_to_find_note'
+    note.body = 'a healthy note'
+    note.save!
+
+    saved = Joplin::Note.new note.id
+    expect(saved.title).to eq('easy_to_find_note')
+
+    saved.delete!
+
+    expect do
+      Joplin::Note.new note.id
+    end.to raise_error Joplin::Error
   end
 end

@@ -1,37 +1,35 @@
-require "joplin/version"
-require "faraday"
-require "json"
+require 'joplin/version'
+require 'faraday'
+require 'json'
 
 module Joplin
   class Error < StandardError; end
   attr_accessor :token
+
   @@token = nil
 
-  def self.token= token
+  def self.token=(token)
     @@token = token
   end
 
   def self.search(query, opts = {})
-    url = "#{Joplin::uri}/search/?query=#{query}&token=#{Joplin::token}&type=#{opts[:type]}"
+    url = "#{Joplin.uri}/search/?query=#{query}&token=#{Joplin.token}&type=#{opts[:type]}"
     res = Faraday.get url
-    parsed = JSON.parse res.body
-    return parsed
+    JSON.parse res.body
   end
 
   def self.get_token
-    begin
-      settings = JSON.parse File.read("#{ENV['HOME']}/.config/joplin-desktop/settings.json")
-      return settings['api.token']
-    rescue
-      return nil
-    end
+    settings = JSON.parse File.read("#{ENV['HOME']}/.config/joplin-desktop/settings.json")
+    settings['api.token']
+  rescue StandardError
+    nil
   end
 
   def self.token
     @@token || get_token
   end
 
-  def self.uri= uri
+  def self.uri=(uri)
     @@uri = uri
   end
 
@@ -39,42 +37,40 @@ module Joplin
     @@uri
   end
 
-  self.uri = "http://localhost:41184"
+  self.uri = 'http://localhost:41184'
 
   class Resource
     attr_reader :id
 
     def self.all
-        url = "#{Joplin::uri}/resources/?token=#{Joplin::token}&fields=id"
-        res = Faraday.get url
-        parsed = JSON.parse res.body
-        if res.status != 200
-          throw Error.new(parsed['error'])
-        end
-        parsed.map do |resource|
-          Resource.new resource['id']
-        end
+      url = "#{Joplin.uri}/resources/?token=#{Joplin.token}&fields=id"
+      res = Faraday.get url
+      parsed = JSON.parse res.body
+      throw Error.new(parsed['error']) if res.status != 200
+      parsed.map do |resource|
+        Resource.new resource['id']
+      end
     end
 
-    def initialize(id=nil)
+    def initialize(id = nil)
+      raise Error, 'need id' unless id
 
-      raise Error.new("need id") unless id
       @id = id
-      url = "#{Joplin::uri}/resources/#{id}?token=#{Joplin::token}&fields=mime,filename,id"
+      url = "#{Joplin.uri}/resources/#{id}?token=#{Joplin.token}&fields=mime,filename,id"
       res = Faraday.get url
       @parsed = JSON.parse res.body
     end
 
     def delete
-      url = "#{Joplin::uri}/resources/#{id}?token=#{Joplin::token}"
+      url = "#{Joplin.uri}/resources/#{id}?token=#{Joplin.token}"
       res = Faraday.delete url
       res.status == 200
     end
 
     def to_s
-      """id: #{@id},
+      ''"id: #{@id},
 mime: #{@parsed['mime']}
-filename: #{@parsed['filename']}"""
+filename: #{@parsed['filename']}"''
     end
 
     def self.orphaned
@@ -85,30 +81,28 @@ filename: #{@parsed['filename']}"""
   end
 
   class Note
-    attr_accessor :body
-    attr_accessor :title
+    attr_accessor :body, :title
     attr_reader :id
 
-    def initialize(id=nil)
-
+    def initialize(id = nil)
       @id = id
-      if id
-        url = "#{Joplin::uri}/notes/#{id}?token=#{Joplin::token}&fields=title,body,id"
-        parse Faraday.get url
-      end
+      return unless id
+
+      url = "#{Joplin.uri}/notes/#{id}?token=#{Joplin.token}&fields=title,body,id"
+      parse Faraday.get url
     end
 
     def resources
-        url = "#{Joplin::uri}/notes/#{id}/resources?token=#{Joplin::token}&fields=id"
-        res = Faraday.get url
-        parsed = JSON.parse res.body
-        parsed.map do |resource_data|
-          id = resource_data['id']
-          Resource.new id
-        end
+      url = "#{Joplin.uri}/notes/#{id}/resources?token=#{Joplin.token}&fields=id"
+      res = Faraday.get url
+      parsed = JSON.parse res.body
+      parsed.map do |resource_data|
+        id = resource_data['id']
+        Resource.new id
+      end
     end
 
-    def to_json
+    def to_json(*_args)
       {
         title: @title,
         body: @body
@@ -117,58 +111,62 @@ filename: #{@parsed['filename']}"""
 
     def save!
       if @id
-        url = "#{Joplin::uri}/notes/#{@id}?token=#{Joplin::token}"
-        response = Faraday.put url, self.to_json
+        url = "#{Joplin.uri}/notes/#{@id}?token=#{Joplin.token}"
+        response = Faraday.put url, to_json
         return response.status == 200
       end
 
-        url = "#{Joplin::uri}/notes/?token=#{Joplin::token}"
-        parse Faraday.post url, self.to_json
+      url = "#{Joplin.uri}/notes/?token=#{Joplin.token}"
+      parse Faraday.post url, to_json
     end
 
     def to_s
-      """id: #{self.id}
-title: #{self.title}
-body: #{self.body}"""
+      ''"id: #{id}
+title: #{title}
+body: #{body}"''
     end
 
     def self.all
-        url = "#{Joplin::uri}/notes/?token=#{Joplin::token}&fields=id"
-        res = Faraday.get url
-        parsed = JSON.parse res.body
-        parsed.map do |note|
-          Note.new note['id']
-        end
+      url = "#{Joplin.uri}/notes/?token=#{Joplin.token}&fields=id"
+      res = Faraday.get url
+      parsed = JSON.parse res.body
+      parsed.map do |note|
+        Note.new note['id']
+      end
+    end
+
+    def delete!
+      url = "#{Joplin.uri}/notes/#{@id}?token=#{Joplin.token}"
+      response = Faraday.delete url
+      response.status == 200
     end
 
     private
-    def parse response
-      if response.body.empty?
-        raise "No note found with id #{@id}"
-      end
+
+    def parse(response)
+      raise "No note found with id #{@id}" if response.body.empty?
+
       note = JSON.parse response.body
-      if response.status != 200
-        raise Error.new note["error"]
-      end
+      raise Error, note['error'] if response.status != 200
+
       @body = note['body']
       @title = note['title']
-      @id = note["id"]
+      @id = note['id']
     end
   end
 
   class Notebook
-    def initialize(id=nil)
-
+    def initialize(id = nil)
       @id = id
-      if id
-        url = "#{Joplin::uri}/folders/#{id}?token=#{Joplin::token}"
-        res = Faraday.get url
-        parsed = JSON.parse res.body
-      end
+      return unless id
+
+      url = "#{Joplin.uri}/folders/#{id}?token=#{Joplin.token}"
+      res = Faraday.get url
+      parsed = JSON.parse res.body
     end
 
     def notes
-      url = "#{Joplin::uri}/folders/#{@id}/notes?token=#{Joplin::token}"
+      url = "#{Joplin.uri}/folders/#{@id}/notes?token=#{Joplin.token}"
       res = Faraday.get url
       notes = JSON.parse res.body
       notes.map! { |n| Joplin::Note.new n['id'] }
