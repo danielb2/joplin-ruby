@@ -1,4 +1,7 @@
-all:
+test:
+	rake spec
+
+build:
 	gem build joplin.gemspec
 
 push: clean all
@@ -6,9 +9,6 @@ push: clean all
 
 clean:
 	rm -f *gem
-
-test:
-	rake
 
 install: clean all
 	gem install --local *gem
