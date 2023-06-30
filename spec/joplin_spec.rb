@@ -20,7 +20,13 @@ RSpec.describe Joplin do
     saved = Joplin::Note.new note.id
     expect(saved.title).to eq('easy_to_find_note')
 
-    saved.delete!
+    saved.title = 'also_easy_to_find_note'
+    saved.save!
+
+    updated = Joplin::Note.new note.id
+    expect(updated.title).to eq('also_easy_to_find_note')
+
+    updated.delete!
 
     expect do
       Joplin::Note.new note.id

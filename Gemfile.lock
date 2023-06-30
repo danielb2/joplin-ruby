@@ -2,36 +2,34 @@ PATH
   remote: .
   specs:
     joplin (0.5.2)
-      faraday (~> 1.0)
+      http (~> 5.1.1)
+      sqlite3 (~> 1.6.3)
+      thor (~> 1.2.2)
 
 GEM
   remote: https://rubygems.org/
   specs:
+    addressable (2.8.4)
+      public_suffix (>= 2.0.2, < 6.0)
     diff-lcs (1.5.0)
-    faraday (1.10.3)
-      faraday-em_http (~> 1.0)
-      faraday-em_synchrony (~> 1.0)
-      faraday-excon (~> 1.1)
-      faraday-httpclient (~> 1.0)
-      faraday-multipart (~> 1.0)
-      faraday-net_http (~> 1.0)
-      faraday-net_http_persistent (~> 1.0)
-      faraday-patron (~> 1.0)
-      faraday-rack (~> 1.0)
-      faraday-retry (~> 1.0)
-      ruby2_keywords (>= 0.0.4)
-    faraday-em_http (1.0.0)
-    faraday-em_synchrony (1.0.0)
-    faraday-excon (1.1.0)
-    faraday-httpclient (1.0.1)
-    faraday-multipart (1.0.4)
-      multipart-post (~> 2)
-    faraday-net_http (1.0.1)
-    faraday-net_http_persistent (1.2.0)
-    faraday-patron (1.0.0)
-    faraday-rack (1.0.0)
-    faraday-retry (1.0.3)
-    multipart-post (2.3.0)
+    domain_name (0.5.20190701)
+      unf (>= 0.0.5, < 1.0.0)
+    ffi (1.15.5)
+    ffi-compiler (1.0.1)
+      ffi (>= 1.0.0)
+      rake
+    http (5.1.1)
+      addressable (~> 2.8)
+      http-cookie (~> 1.0)
+      http-form_data (~> 2.2)
+      llhttp-ffi (~> 0.4.0)
+    http-cookie (1.0.5)
+      domain_name (~> 0.5)
+    http-form_data (2.3.0)
+    llhttp-ffi (0.4.0)
+      ffi-compiler (~> 1.0)
+      rake (~> 13.0)
+    public_suffix (5.0.1)
     rake (13.0.6)
     rspec (3.12.0)
       rspec-core (~> 3.12.0)
@@ -46,21 +44,20 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.12.0)
     rspec-support (3.12.1)
-    ruby2_keywords (0.0.5)
     sqlite3 (1.6.3-arm64-darwin)
     thor (1.2.2)
+    unf (0.1.4)
+      unf_ext
+    unf_ext (0.0.8.2)
 
 PLATFORMS
   arm64-darwin-22
 
 DEPENDENCIES
   bundler (~> 2.0)
-  faraday (~> 1.0)
   joplin!
   rake (~> 13.0)
-  rspec (~> 3.0)
-  sqlite3 (~> 1.4)
-  thor (~> 1.0)
+  rspec (~> 3.12.0)
 
 BUNDLED WITH
    2.4.10

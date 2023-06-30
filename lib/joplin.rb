@@ -1,5 +1,5 @@
 require 'joplin/version'
-require 'faraday'
+require 'http'
 require 'json'
 
 module Joplin
@@ -14,7 +14,7 @@ module Joplin
 
   def self.search(query, opts = {})
     url = "#{Joplin.uri}/search/?query=#{query}&token=#{Joplin.token}&type=#{opts[:type]}"
-    res = Faraday.get url
+    res = HTTP.get url
     JSON.parse res.body
   end
 
@@ -44,7 +44,7 @@ module Joplin
 
     def self.all
       url = "#{Joplin.uri}/resources/?token=#{Joplin.token}&fields=id"
-      res = Faraday.get url
+      res = HTTP.get url
       parsed = JSON.parse res.body
       throw Error.new(parsed['error']) if res.status != 200
       parsed.map do |resource|
@@ -57,13 +57,13 @@ module Joplin
 
       @id = id
       url = "#{Joplin.uri}/resources/#{id}?token=#{Joplin.token}&fields=mime,filename,id"
-      res = Faraday.get url
+      res = HTTP.get url
       @parsed = JSON.parse res.body
     end
 
     def delete
       url = "#{Joplin.uri}/resources/#{id}?token=#{Joplin.token}"
-      res = Faraday.delete url
+      res = HTTP.delete url
       res.status == 200
     end
 
@@ -89,12 +89,12 @@ filename: #{@parsed['filename']}"''
       return unless id
 
       url = "#{Joplin.uri}/notes/#{id}?token=#{Joplin.token}&fields=title,body,id"
-      parse Faraday.get url
+      parse HTTP.get url
     end
 
     def resources
       url = "#{Joplin.uri}/notes/#{id}/resources?token=#{Joplin.token}&fields=id"
-      res = Faraday.get url
+      res = HTTP.get url
       parsed = JSON.parse res.body
       parsed.map do |resource_data|
         id = resource_data['id']
@@ -112,12 +112,12 @@ filename: #{@parsed['filename']}"''
     def save!
       if @id
         url = "#{Joplin.uri}/notes/#{@id}?token=#{Joplin.token}"
-        response = Faraday.put url, to_json
+        response = HTTP.put url, body: to_json
         return response.status == 200
       end
 
       url = "#{Joplin.uri}/notes/?token=#{Joplin.token}"
-      parse Faraday.post url, to_json
+      parse HTTP.post url, body: to_json
     end
 
     def to_s
@@ -128,7 +128,7 @@ body: #{body}"''
 
     def self.all
       url = "#{Joplin.uri}/notes/?token=#{Joplin.token}&fields=id"
-      res = Faraday.get url
+      res = HTTP.get url
       parsed = JSON.parse res.body
       parsed.map do |note|
         Note.new note['id']
@@ -137,7 +137,7 @@ body: #{body}"''
 
     def delete!
       url = "#{Joplin.uri}/notes/#{@id}?token=#{Joplin.token}"
-      response = Faraday.delete url
+      response = HTTP.delete url
       response.status == 200
     end
 
@@ -161,13 +161,13 @@ body: #{body}"''
       return unless id
 
       url = "#{Joplin.uri}/folders/#{id}?token=#{Joplin.token}"
-      res = Faraday.get url
+      res = HTTP.get url
       parsed = JSON.parse res.body
     end
 
     def notes
       url = "#{Joplin.uri}/folders/#{@id}/notes?token=#{Joplin.token}"
-      res = Faraday.get url
+      res = HTTP.get url
       notes = JSON.parse res.body
       notes.map! { |n| Joplin::Note.new n['id'] }
     end
