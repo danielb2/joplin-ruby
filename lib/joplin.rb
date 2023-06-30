@@ -2,6 +2,7 @@ require 'joplin/version'
 require 'http'
 require 'json'
 
+# https://joplinapp.org/api/overview/
 module Joplin
   class Error < StandardError; end
   attr_accessor :token
@@ -81,11 +82,12 @@ filename: #{@parsed['filename']}"''
   end
 
   class Note
+    class NotFound < Joplin::Error; end
+
     attr_accessor :body, :title, :parent_id
     attr_reader :id
 
     def initialize(id: nil, parent_id: nil)
-      puts "id: #{id} parent_id: #{parent_id}"
       @id = id
       @parent_id = parent_id
       return unless id
@@ -124,9 +126,7 @@ filename: #{@parsed['filename']}"''
     end
 
     def to_s
-      ''"id: #{id}
-title: #{title}
-body: #{body}"''
+      %(id: #{id} title: #{title} parent_id: #{parent_id} body: #{body})
     end
 
     def self.all
@@ -150,7 +150,8 @@ body: #{body}"''
       raise "No note found with id #{@id}" if response.body.empty?
 
       note = JSON.parse response.body
-      raise Error, note['error'] if response.status != 200
+      raise NotFound, "No note found with id: #{id}" if response.code == 404
+      raise Error, "#{note['error']}\nid: #{id}" if response.code != 200
 
       @body = note['body']
       @title = note['title']

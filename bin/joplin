@@ -74,14 +74,21 @@ class MyCLI < Thor
     title = nil
     note.body.each_line do |line|
       title = ::Regexp.last_match(1) if line =~ /title: (.*)$/
-      line =~ %r{\(:/([^)]+)\)}
-      notes.push Joplin::Note.new id: ::Regexp.last_match(1) if ::Regexp.last_match(1)
+      line =~ %r{\(:/(\w+)\)}
+      begin
+        if ::Regexp.last_match(1)
+          notes.push Joplin::Note.new id: ::Regexp.last_match(1) if ::Regexp.last_match(1)
+          print '.'
+        end
+      rescue Joplin::Note::NotFound
+        puts "Couldn't find note with id #{id} so we skip it"
+      end
     end
     new_note = Joplin::Note.new parent_id: note.parent_id
     new_note.title = title || "built: #{note.title}"
     new_note.body = notes.map { |n| "\# #{n.title}\n\n#{n.body}" }.join(DIVIDER)
     new_note.save!
-    puts "Saved: #{new_note.title} with id: #{new_note.id}, parent_id: #{new_note.parent_id}"
+    puts "\nSaved: `#{new_note.title}` with id: #{new_note.id}, parent_id: #{new_note.parent_id}"
   end
 
   private
