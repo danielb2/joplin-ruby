@@ -41,25 +41,42 @@ module Joplin
   self.uri = 'http://localhost:41184'
 
   class Resource
-    attr_reader :id
+    class NotFound < Joplin::Error; end
+    attr_reader :id, :filename, :mime
 
     def self.all
-      url = "#{Joplin.uri}/resources/?token=#{Joplin.token}&fields=id"
-      res = HTTP.get url
+      url = "#{Joplin.uri}/resources/?token=#{Joplin.token}&fields=id,filename"
+      response = HTTP.get url
+
       parsed = JSON.parse res.body
-      throw Error.new(parsed['error']) if res.status != 200
+      throw Error.new(parsed['error']) if response.status != 200
       parsed.map do |resource|
         Resource.new resource['id']
       end
     end
 
-    def initialize(id = nil)
+    def initialize(id)
       raise Error, 'need id' unless id
 
       @id = id
       url = "#{Joplin.uri}/resources/#{id}?token=#{Joplin.token}&fields=mime,filename,id"
-      res = HTTP.get url
-      @parsed = JSON.parse res.body
+      response = HTTP.get url
+      raise NotFound, "No resource found with id: #{id}" if response.code == 404
+
+      resource = @parsed = JSON.parse response.body
+      @filename = resource['filename']
+      @mime = resource['mime']
+    end
+
+    def file
+      url = "#{Joplin.uri}/resources/#{id}/file?token=#{Joplin.token}"
+      response = HTTP.get url
+      throw Error if response.status != 200
+      response.body
+    end
+
+    def write(path = nil)
+      IO.write path || id, file
     end
 
     def delete
@@ -69,9 +86,7 @@ module Joplin
     end
 
     def to_s
-      ''"id: #{@id},
-mime: #{@parsed['mime']}
-filename: #{@parsed['filename']}"''
+      %(id: #{id}, mime: #{mime} filename: #{filename})
     end
 
     def self.orphaned
@@ -97,13 +112,35 @@ filename: #{@parsed['filename']}"''
     end
 
     def resources
-      url = "#{Joplin.uri}/notes/#{id}/resources?token=#{Joplin.token}&fields=id"
-      res = HTTP.get url
-      parsed = JSON.parse res.body
-      parsed.map do |resource_data|
+      url = "#{Joplin.uri}/notes/#{id}/resources?token=#{Joplin.token}&fields=id,filename"
+      response = HTTP.get url
+      raise Error, "#{response}" if response.code != 200
+
+      parsed = JSON.parse response.body
+      parsed['items'].map do |resource_data|
         id = resource_data['id']
         Resource.new id
       end
+    end
+
+    def prepare_body_for_writing_by_fixing_resources
+      prepared = String(body)
+      prepared.each_line do |line|
+      end
+    end
+
+    def write
+      Dir.mkdir title
+      Dir.mkdir "#{title}/resources"
+      puts "wrote note #{title}/#{title}.md"
+      puts 'writing resources'
+      body_to_write = String(body) # make a copy
+      resources.each do |resource|
+        print '.'
+        resource.write "#{title}/resources/#{resource.id}"
+        body_to_write.sub!(%r{:/#{resource.id}}, "resources/#{resource.id}")
+      end
+      IO.write "#{title}/#{title}.md", body_to_write
     end
 
     def to_json(*_args)

@@ -10,7 +10,7 @@ DIVIDER = %(
 <svg height="50" width="460">
   <style> .line { stroke-width: 1px; fill: black; stroke: black; } </style>
   <g id="triangle"><path d="M0 30 L200 30  Q 220 25 200 35 Z" class="line" /></g>
-  <use xlink:href="#triangle" transform="scale(-1 1) translate(-450 0)"/>
+  <use href="#triangle" transform="scale(-1 1) translate(-450 0)"/>
   <circle cx="225" cy="32" r="7" class="line"/>
 </svg>
 
@@ -41,6 +41,13 @@ class MyCLI < Thor
     puts Joplin::VERSION
   end
 
+  desc 'write', 'write a note'
+  long_desc 'This will write a note in the format of "note title/note title.md and put all resources under the folder'
+  def write(id)
+    note = Joplin::Note.new(id:)
+    note.write
+  end
+
   desc :nb2n, 'concate all notes in a notebook to one note. Possible PDF export'
   long_desc 'The idea is to make a big note from all the notes in a notebook. PDF export or whatever export can happen from that. The notes are concatenated with a separator.'
   option :token
@@ -55,7 +62,7 @@ class MyCLI < Thor
     notes = notebook.notes
     new_note = Joplin::Note.new
     new_note.title = query
-    new_note.body = notes.map { |n| "\# #{n.title}\n\n#{n.body}" }.join(DIVIDER)
+    new_note.body = notes.map { |n| "\# #{n.title}\n\n#{n.body}" }.join
     new_note.save!
     puts "Saved: #{new_note.title} with id: #{new_note.id}"
   end
@@ -86,7 +93,7 @@ class MyCLI < Thor
     end
     new_note = Joplin::Note.new parent_id: note.parent_id
     new_note.title = title || "built: #{note.title}"
-    new_note.body = notes.map { |n| "\# #{n.title}\n\n#{n.body}" }.join(DIVIDER)
+    new_note.body = notes.map { |n| "\# #{n.title}\n\n#{n.body}" }.join
     new_note.save!
     puts "\nSaved: `#{new_note.title}` with id: #{new_note.id}, parent_id: #{new_note.parent_id}"
   end
