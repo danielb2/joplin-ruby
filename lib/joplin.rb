@@ -138,7 +138,7 @@ module Joplin
       resources.each do |resource|
         print '.'
         resource.write "#{title}/resources/#{resource.id}"
-        body_to_write.sub!(%r{:/#{resource.id}}, "resources/#{resource.id}")
+        body_to_write.sub!(%r{:/#{resource.id}}, "./resources/#{resource.id}")
       end
       IO.write "#{title}/#{title}.md", body_to_write
     end

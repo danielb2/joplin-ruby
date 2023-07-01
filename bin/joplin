@@ -67,6 +67,18 @@ class MyCLI < Thor
     puts "Saved: #{new_note.title} with id: #{new_note.id}"
   end
 
+  desc :epub,
+       'build a note from a note (help build), write the note, and create an epub from the result. needs pandoc installed'
+
+  def epub(id)
+    note = build(id)
+    write(note.id)
+    mdfile = "#{note.title}.md"
+    epub_file = "#{note.title}.epub"
+    FileUtils.cd note.title
+    `pandoc '#{mdfile}' -o '#{epub_file}' -t epub3 -f markdown+smart --title '#{note.title}' --toc --toc-depth=3 --data-dir='#{note.title}/resources'`
+  end
+
   desc :build, 'build a note from a note containing references'
 
   long_desc %(Takes a note and looks up all the referenced notes and makes a new
@@ -96,6 +108,7 @@ class MyCLI < Thor
     new_note.body = notes.map { |n| "\# #{n.title}\n\n#{n.body}" }.join
     new_note.save!
     puts "\nSaved: `#{new_note.title}` with id: #{new_note.id}, parent_id: #{new_note.parent_id}"
+    new_note
   end
 
   private
