@@ -132,13 +132,10 @@ module Joplin
     def write
       Dir.mkdir title
       Dir.mkdir "#{title}/resources"
-      puts "wrote note #{title}/#{title}.md"
-      puts 'writing resources'
       body_to_write = String(body) # make a copy
       resources.each do |resource|
-        print '.'
         resource.write "#{title}/resources/#{resource.id}"
-        body_to_write.sub!(%r{:/#{resource.id}}, "./resources/#{resource.id}")
+        body_to_write.gsub!(%r{:/#{resource.id}}, "./resources/#{resource.id}")
       end
       IO.write "#{title}/#{title}.md", body_to_write
     end

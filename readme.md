@@ -50,3 +50,9 @@ You can specify the id of the notebook
 Will take a notebook and concatenate all notes into one for easy export to PDF
 
 The token argument is optional and if you have it installed locally it will find the token
+
+### joplin epub <id of note>
+
+This will generate an epub from the referenced notes in the note. It will not
+include the actual note, but only linked markdown notes within. Rendering
+things like tables, mermaid diagrams etc is not supported

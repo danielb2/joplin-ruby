@@ -73,10 +73,12 @@ class MyCLI < Thor
   def epub(id)
     note = build(id)
     write(note.id)
-    mdfile = "#{note.title}.md"
-    epub_file = "#{note.title}.epub"
     FileUtils.cd note.title
-    `pandoc '#{mdfile}' -o '#{epub_file}' -t epub3 -f markdown+smart --title '#{note.title}' --toc --toc-depth=3 --data-dir='#{note.title}/resources'`
+    `pandoc '#{note.title}.md' -o '../#{note.title}.epub' -t epub3 -f markdown+smart --title '#{note.title}' --toc --toc-depth=3 --metadata title='#{note.title}'`
+    note.delete!
+    FileUtils.cd '..'
+    FileUtils.rm_rf note.title
+    puts "OK. Done. Your book is #{note.title}.epub"
   end
 
   desc :build, 'build a note from a note containing references'
@@ -95,10 +97,7 @@ class MyCLI < Thor
       title = ::Regexp.last_match(1) if line =~ /title: (.*)$/
       line =~ %r{\(:/(\w+)\)}
       begin
-        if ::Regexp.last_match(1)
-          notes.push Joplin::Note.new id: ::Regexp.last_match(1) if ::Regexp.last_match(1)
-          print '.'
-        end
+        notes.push Joplin::Note.new id: ::Regexp.last_match(1) if ::Regexp.last_match(1) && ::Regexp.last_match(1)
       rescue Joplin::Note::NotFound
         puts "Couldn't find note with id #{id} so we skip it"
       end
@@ -107,7 +106,6 @@ class MyCLI < Thor
     new_note.title = title || "built: #{note.title}"
     new_note.body = notes.map { |n| "\# #{n.title}\n\n#{n.body}" }.join
     new_note.save!
-    puts "\nSaved: `#{new_note.title}` with id: #{new_note.id}, parent_id: #{new_note.parent_id}"
     new_note
   end
 
