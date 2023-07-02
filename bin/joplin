@@ -90,7 +90,7 @@ class MyCLI < Thor
   def epub(id)
     abort 'You need to install pandoc and have it in your path' unless has_exec? 'pandoc'
     note = build(id)
-    write(note.id)
+    note.write
     FileUtils.cd note.title
     `pandoc '#{note.title}.md' -o '../#{note.title}.epub' -t epub3 -f markdown+smart --title '#{note.title}' --toc --toc-depth=3 --metadata title='#{note.title}'`
     note.delete!
