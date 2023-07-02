@@ -129,15 +129,16 @@ module Joplin
       end
     end
 
-    def write
-      Dir.mkdir title
-      Dir.mkdir "#{title}/resources"
+    def write(path = nil)
+      dir = path || title
+      Dir.mkdir dir
+      Dir.mkdir "#{dir}/resources"
       body_to_write = String(body) # make a copy
       resources.each do |resource|
-        resource.write "#{title}/resources/#{resource.id}"
+        resource.write "#{dir}/resources/#{resource.id}"
         body_to_write.gsub!(%r{:/#{resource.id}}, "./resources/#{resource.id}")
       end
-      IO.write "#{title}/#{title}.md", body_to_write
+      IO.write "#{dir}/#{title}.md", body_to_write
     end
 
     def to_json(*_args)

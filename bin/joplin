@@ -95,7 +95,8 @@ class MyCLI < Thor
     `pandoc '#{note.title}.md' -o '../#{note.title}.epub' -t epub3 -f markdown+smart --title '#{note.title}' --toc --toc-depth=3 --metadata title='#{note.title}'`
     note.delete!
     FileUtils.cd '..'
-    # FileUtils.rm_rf note.title
+    FileUtils.rm_rf note.title
+    abort 'Omg. pandoc failed!' if $?.exitstatus != 0
     puts "OK. Done. Your book is #{note.title}.epub"
   end
 
@@ -110,14 +111,15 @@ class MyCLI < Thor
     token
     note = Joplin::Note.new(id:)
     notes = []
-    yml = extract_yaml_header_for_epub(note)
     note.body.each_line do |line|
-      title = ::Regexp.last_match(1) if line =~ /title: (.*)$/
-      line =~ %r{\(:/(\w+)\)}
+      match = line.match %r{!?\[(.*)?\]\(:/(\w+)\)}
+      next unless match
+      next if match[0][0] == '!'
+
       begin
-        notes.push Joplin::Note.new id: ::Regexp.last_match(1) if ::Regexp.last_match(1) && ::Regexp.last_match(1)
+        notes.push Joplin::Note.new id: match[2]
       rescue Joplin::Note::NotFound
-        puts "Couldn't find note with id #{id} so we skip it"
+        puts "Couldn't find note with id #{id} so we skip it. Maybe an image"
       end
     end
     yml = extract_yaml_header_for_epub(note)
