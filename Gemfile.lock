@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    joplin (0.5.2)
+    joplin (1.0.1)
       http (~> 5.1.1)
       sqlite3 (~> 1.6.3)
       thor (~> 1.2.2)

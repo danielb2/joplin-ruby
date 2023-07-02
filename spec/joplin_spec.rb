@@ -17,19 +17,19 @@ RSpec.describe Joplin do
     note.body = 'a healthy note'
     note.save!
 
-    saved = Joplin::Note.new note.id
+    saved = Joplin::Note.new id: note.id
     expect(saved.title).to eq('easy_to_find_note')
 
     saved.title = 'also_easy_to_find_note'
     saved.save!
 
-    updated = Joplin::Note.new note.id
+    updated = Joplin::Note.new id: note.id
     expect(updated.title).to eq('also_easy_to_find_note')
 
     updated.delete!
 
     expect do
-      Joplin::Note.new note.id
+      Joplin::Note.new id: note.id
     end.to raise_error Joplin::Error
   end
 end
