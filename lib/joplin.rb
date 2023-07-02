@@ -131,8 +131,7 @@ module Joplin
 
     def write(path = nil)
       dir = path || title
-      Dir.mkdir dir
-      Dir.mkdir "#{dir}/resources"
+      FileUtils.mkdir_p "#{dir}/resources"
       body_to_write = String(body) # make a copy
       resources.each do |resource|
         resource.write "#{dir}/resources/#{resource.id}"
