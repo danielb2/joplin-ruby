@@ -4,6 +4,7 @@ $:.unshift File.expand_path('../lib', __dir__)
 
 require 'joplin'
 require 'thor'
+require 'yaml'
 
 DIVIDER = %(
 
@@ -70,14 +71,31 @@ class MyCLI < Thor
   desc :epub,
        'build a note from a note (help build), write the note, and create an epub from the result. needs pandoc installed'
 
+  long_desc <<-DESC
+    If the building note has a yaml descriptor https://pandoc.org/MANUAL.html#epubs
+    then the epub will end up having the meta data.
+
+    Below is an example note. The for the referenced note are a result from using Joplin's webclipper on https://fiachetti.gitlab.io/mastering-roda/
+
+    ---\n
+    title: Mastering Roda\n
+    author: Federico Iachetti\n
+    rights:   Creative Commons Attribution 4.0 International License\n
+    language: en-US\n
+    ...
+
+    [Mastering Roda](:/ca267a317fa544f99f559040696f1cae)
+  DESC
+
   def epub(id)
+    abort 'You need to install pandoc and have it in your path' unless has_exec? 'pandoc'
     note = build(id)
     write(note.id)
     FileUtils.cd note.title
     `pandoc '#{note.title}.md' -o '../#{note.title}.epub' -t epub3 -f markdown+smart --title '#{note.title}' --toc --toc-depth=3 --metadata title='#{note.title}'`
     note.delete!
     FileUtils.cd '..'
-    FileUtils.rm_rf note.title
+    # FileUtils.rm_rf note.title
     puts "OK. Done. Your book is #{note.title}.epub"
   end
 
@@ -92,7 +110,7 @@ class MyCLI < Thor
     token
     note = Joplin::Note.new(id:)
     notes = []
-    title = nil
+    yml = extract_yaml_header_for_epub(note)
     note.body.each_line do |line|
       title = ::Regexp.last_match(1) if line =~ /title: (.*)$/
       line =~ %r{\(:/(\w+)\)}
@@ -102,14 +120,27 @@ class MyCLI < Thor
         puts "Couldn't find note with id #{id} so we skip it"
       end
     end
+    yml = extract_yaml_header_for_epub(note)
     new_note = Joplin::Note.new parent_id: note.parent_id
-    new_note.title = title || "built: #{note.title}"
-    new_note.body = notes.map { |n| "\# #{n.title}\n\n#{n.body}" }.join
+    new_note.title = yml ? yml['title'] : "built: #{note.title}"
+    new_note.body = "#{Psych.dump yml}...\n" if yml
+    new_note.body += notes.map { |n| "\# #{n.title}\n\n#{n.body}" }.join
     new_note.save!
     new_note
   end
 
   private
+
+  def extract_yaml_header_for_epub(note)
+    yml = Psych.load note.body
+    return nil unless yml.is_a? Hash
+
+    yml
+  end
+
+  def has_exec?(command)
+    !`which #{command}`.empty?
+  end
 
   def token
     Joplin.token = Joplin.get_token || options[:token]

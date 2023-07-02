@@ -4,7 +4,7 @@ test:
 build:
 	gem build joplin.gemspec
 
-push: clean all
+push: clean build
 	gem push *gem
 
 clean:
