@@ -88,7 +88,6 @@ class MyCLI < Thor
   DESC
 
   def epub(id)
-    abort 'You need to install pandoc and have it in your path' unless has_exec? 'pandoc'
     build_note = Joplin::Note.new(id:)
     note = build(id)
     note.write
@@ -140,10 +139,6 @@ class MyCLI < Thor
     return nil unless yml.is_a? Hash
 
     yml
-  end
-
-  def has_exec?(command)
-    !`which #{command}`.empty?
   end
 
   def token
