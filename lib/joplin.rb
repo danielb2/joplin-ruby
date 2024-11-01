@@ -205,10 +205,50 @@ module Joplin
     end
 
     def notes
-      url = "#{Joplin.uri}/folders/#{@id}/notes?token=#{Joplin.token}"
-      res = HTTP.get url
-      notes = JSON.parse res.body
-      notes.map! { |n| Joplin::Note.new n['id'] }
+      notes = []
+      page = 1
+
+      loop do
+        url = "#{Joplin.uri}/folders/#{@id}/notes?token=#{Joplin.token}&page=#{page}"
+        response = HTTP.get(url)
+
+        raise Error, "Failed to fetch notes: #{response}" if response.status != 200
+
+        data = JSON.parse(response.body)
+
+        items = data['items']
+        items.each { |note_data| notes << Joplin::Note.new(id: note_data['id']) }
+
+        break unless data['has_more']
+
+        page += 1
+      end
+
+      notes
+    end
+
+    def self.all
+      notebooks = []
+      page = 1
+
+      loop do
+        url = "#{Joplin.uri}/folders?token=#{Joplin.token}&page=#{page}"
+        response = HTTP.get(url)
+
+        raise Error, "Failed to fetch notebooks: #{response}" if response.status != 200
+
+        data = JSON.parse(response.body)
+        items = data['items']
+
+        break if items.empty?
+
+        # Collect Notebook instances
+        items.each { |notebook_data| notebooks << Notebook.new(notebook_data['id']) }
+
+        page += 1
+      end
+
+      notebooks
     end
   end
 end
